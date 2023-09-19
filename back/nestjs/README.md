@@ -1,6 +1,6 @@
 # Troubles
-
-- [CI PNPM support](https://github.com/orgs/pnpm/discussions/3367)
+- [CI PNPM support](https://github.com/orgs/pnpm/discussions/3367) so i moved from pnpm to npm
+- [Deploying a NestJS app for Free on Cyclic](https://levelup.gitconnected.com/deploying-a-nestjs-app-for-free-on-cyclic-907c780f7f35)
 
 <p align="center">
   <a href="http://nestjs.com/" target="blank"><img src="https://nestjs.com/img/logo-small.svg" width="200" alt="Nest Logo" /></a>
