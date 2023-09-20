@@ -23,11 +23,15 @@
     "prepare": "npm ci --prefix ./client/react"
   },
   "dependencies": {
+    "@nestjs/axios": "^3.0.0",
     "@nestjs/common": "^10.0.0",
+    "@nestjs/config": "^3.1.1",
     "@nestjs/core": "^10.0.0",
     "@nestjs/platform-express": "^10.0.0",
     "@nestjs/serve-static": "^4.0.0",
     "@nestjs/swagger": "^7.1.11",
+    "axios": "^1.5.0",
+    "axios-jwt": "^4.0.0",
     "reflect-metadata": "^0.1.13",
     "rxjs": "^7.8.1"
   },
