@@ -1,12 +1,8 @@
 import { Injectable } from '@nestjs/common';
 import { HttpService } from '@nestjs/axios';
 import * as process from 'process';
-import axios from 'axios';
-import {
-  IAuthTokens,
-  TokenRefreshRequest,
-  applyAuthTokenInterceptor,
-} from 'axios-jwt';
+import axios, { AxiosHeaders } from 'axios';
+import { IAuthTokens, applyAuthTokenInterceptor } from 'axios-jwt';
 import { getBaseUrl } from 'src/lib';
 
 export interface Credentails {
@@ -21,36 +17,34 @@ export class AmoClientService {
   private creds: Credentails = {};
 
   constructor(private readonly httpService: HttpService) {
-    const requestRefresh: TokenRefreshRequest = async (
-      refreshToken: string,
-    ): Promise<IAuthTokens | string> => {
-      const props = {
-        client_id: process.env.APP_CLIENT_ID,
-        client_secret: process.env.APP_CLIENT_SECRET,
-        grant_type: 'refresh_token',
-        refresh_token: refreshToken,
-        redirect_uri: process.env.APP_REDIRECT_URI,
-      };
-      console.log({ props });
-      const response = await axios.post(
-        `${getBaseUrl()}oauth2/access_token`,
-        props,
-      );
-      return response.data.access_token;
-    };
-
     // может работать некорректно из-за (как говорят) странной реализации OAuth в CRM
     applyAuthTokenInterceptor(httpService.axiosRef, {
-      requestRefresh,
+      requestRefresh: async (
+        refreshToken: string,
+      ): Promise<IAuthTokens | string> => {
+        const props = {
+          client_id: process.env.APP_CLIENT_ID,
+          client_secret: process.env.APP_CLIENT_SECRET,
+          grant_type: 'refresh_token',
+          refresh_token: refreshToken,
+          redirect_uri: process.env.APP_REDIRECT_URI,
+        };
+        const response = await axios.post(
+          `${getBaseUrl()}oauth2/access_token`,
+          props,
+        );
+        return response.data.access_token;
+      },
       getStorage: () => ({
         remove: async (key: string) => {
           delete this.creds[key];
         },
         set: async (key: string, value: string) => {
           this.creds[key] = value;
+          console.log('SETTER creds', this.creds);
         },
         get: async (key: string) => {
-          return this.creds[key];
+          return this.creds?.[key] || null;
         },
       }),
     });
@@ -58,22 +52,20 @@ export class AmoClientService {
 
   async getLeads() {
     const res = await this.httpService
-      .get('/api/v4/leads')
-      .toPromise() // todo: use rxjs
-      .then((response) => {
-        this.creds = response.data;
-        return 'Auth success';
+      .get('/api/v4/leads', {
+        headers: {
+          Authorization: `${this.creds.token_type} ${this.creds.access_token}`,
+        },
       })
-      .catch((error) => {
-        console.log({ error });
-        return error.response.data;
-      });
+      .toPromise() // todo: use rxjs
+      .then((response) => response.data)
+      .catch((error) => error.response.data);
     console.log({ res });
     return res;
   }
 
   async auth() {
-    console.log('process.env', process.env);
+    //    console.log('process.env', process.env);
     const res = await this.httpService
       .post('oauth2/access_token', {
         client_id: process.env.APP_CLIENT_ID,

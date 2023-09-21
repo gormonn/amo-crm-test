@@ -22,22 +22,6 @@ export class AppController {
     return this.amoClientService.auth();
   }
 
-  //  todo: remove
-  @Get('set-auth-code')
-  setAuthCode(@Query('code') code) {
-    process.env.APP_CLIENT_AUTH_CODE = code;
-  }
-  //  todo: remove
-  @Get('env')
-  setEnv() {
-    return Object.keys(process.env)
-      .filter((key) => key.indexOf('APP_') === 0)
-      .reduce((obj, key) => {
-        obj[key] = process.env[key];
-        return obj;
-      }, {});
-  }
-
   @Get('leads')
   getLeads() {
     //    return 'leads';
