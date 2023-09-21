@@ -1,10 +1,11 @@
-import axios from 'axios'
 import { LeadResponse } from '../types';
+import { axiosInstance } from './lib.ts';
 
 const leads = {
-  getAll: () => axios.get<LeadResponse>('/leads')
-}
+  getAll: () => axiosInstance.get<LeadResponse>('/leads'),
+  getFiltered: () => axiosInstance.get<LeadResponse>('/leads'),
+};
 
 export const api = {
-  leads
-}
+  leads,
+};

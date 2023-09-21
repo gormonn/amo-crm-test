@@ -1,4 +1,7 @@
-import { Table } from 'antd';
+import { Alert, Button, Table } from 'antd';
+import { useGate, useUnit } from 'effector-react';
+import { leadsModel } from '../../../entities/leads';
+import css from './leads.module.scss';
 
 const dataSource = [
   {
@@ -33,4 +36,20 @@ const columns = [
   },
 ];
 
-export const Leads = () => <Table dataSource={dataSource} columns={columns} />;
+export const Leads = () => {
+  useGate(leadsModel.load);
+  const [dataSource, error, inProgress, getFilteredLeads] = useUnit([
+    leadsModel.$leads,
+    leadsModel.$error,
+    leadsModel.$inProgress,
+    leadsModel.getFilteredLeads,
+  ]);
+
+  return (
+    <div className={css.leads}>
+      {error && <Alert message={error} type="warning" closable></Alert>}
+      <Table dataSource={dataSource} columns={columns} loading={inProgress} />
+      <Button onClick={getFilteredLeads}>Use filter</Button>
+    </div>
+  );
+};
