@@ -20,6 +20,7 @@ const $leads = createStore<Array<Lead>>([]);
 const $error = createStore<string>('');
 const load = createGate();
 
+// @ts-ignore
 sample({
   source: load.status,
   filter: Boolean,
