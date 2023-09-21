@@ -1,1 +1,2 @@
-export const BASE_API = `https://${process.env.USER_DOMAIN}.amocrm.ru/`;
+export const getBaseUrl = () =>
+  `https://${process.env.APP_USER_DOMAIN}.amocrm.ru/`;

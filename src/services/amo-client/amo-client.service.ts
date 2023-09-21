@@ -4,11 +4,10 @@ import * as process from 'process';
 import axios from 'axios';
 import {
   IAuthTokens,
-  StorageType,
   TokenRefreshRequest,
   applyAuthTokenInterceptor,
 } from 'axios-jwt';
-import { BASE_API } from 'src/lib';
+import { getBaseUrl } from 'src/lib';
 
 export interface Credentails {
   token_type?: string;
@@ -26,15 +25,15 @@ export class AmoClientService {
       refreshToken: string,
     ): Promise<IAuthTokens | string> => {
       const props = {
-        client_id: process.env.CLIENT_ID,
-        client_secret: process.env.CLIENT_SECRET,
+        client_id: process.env.APP_CLIENT_ID,
+        client_secret: process.env.APP_CLIENT_SECRET,
         grant_type: 'refresh_token',
         refresh_token: refreshToken,
-        redirect_uri: process.env.REDIRECT_URI,
+        redirect_uri: process.env.APP_REDIRECT_URI,
       };
       console.log({ props });
       const response = await axios.post(
-        `${BASE_API}oauth2/access_token`,
+        `${getBaseUrl()}oauth2/access_token`,
         props,
       );
       return response.data.access_token;
@@ -57,15 +56,31 @@ export class AmoClientService {
     });
   }
 
+  async getLeads() {
+    const res = await this.httpService
+      .get('/api/v4/leads')
+      .toPromise() // todo: use rxjs
+      .then((response) => {
+        this.creds = response.data;
+        return 'Auth success';
+      })
+      .catch((error) => {
+        console.log({ error });
+        return error.response.data;
+      });
+    console.log({ res });
+    return res;
+  }
+
   async auth() {
     console.log('process.env', process.env);
     const res = await this.httpService
       .post('oauth2/access_token', {
-        client_id: process.env.CLIENT_ID,
-        client_secret: process.env.CLIENT_SECRET,
+        client_id: process.env.APP_CLIENT_ID,
+        client_secret: process.env.APP_CLIENT_SECRET,
         grant_type: 'authorization_code',
-        code: process.env.CLIENT_AUTH_CODE,
-        redirect_uri: process.env.REDIRECT_URI,
+        code: process.env.APP_CLIENT_AUTH_CODE,
+        redirect_uri: process.env.APP_REDIRECT_URI,
       })
       .toPromise() // todo: use rxjs
       .then((response) => {

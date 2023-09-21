@@ -6,7 +6,7 @@ import { HttpModule } from '@nestjs/axios';
 import { ConfigModule } from '@nestjs/config';
 import { AmoClientService } from './services/amo-client/amo-client.service';
 import { join } from 'path';
-import { BASE_API } from './lib';
+import { getBaseUrl } from './lib';
 //import { ApiController } from './controlles/api/api.controller';
 //import { LeadsController } from './api/leads/leads.controller';
 //import { AmoClientService } from './services/amo-client/amo-client.service';
@@ -22,7 +22,7 @@ import { BASE_API } from './lib';
       exclude: ['/api/(.*)'],
     }),
     HttpModule.register({
-      baseURL: BASE_API,
+      baseURL: getBaseUrl(),
       headers: {
         'Content-Type': 'application/json',
         'User-Agent': 'amoCRM-oAuth-client/1.0',
