@@ -1,6 +1,12 @@
-import { createEffect, createEvent, createStore, sample } from 'effector';
+import {
+  createEffect,
+  createEvent,
+  createStore,
+  restore,
+  sample,
+} from 'effector';
 import { createGate } from 'effector-react';
-import { pending } from 'patronum';
+import { debounce, pending } from 'patronum';
 import { Lead } from 'shared/types';
 import { api } from 'shared/api';
 
@@ -10,16 +16,21 @@ const getAllLeadsFx = createEffect(async () => {
   return data;
 });
 
-const getFilteredLeads = createEvent();
-const getFilteredLeadsFx = createEffect(async () => {
-  const { data } = await api.leads.getFiltered();
+const getFilteredLeads = createEvent<string>();
+const getFilteredLeadsFx = createEffect(async (query: string) => {
+  const { data } = await api.leads.getFiltered(query);
   return data;
 });
+
+const setQuery = createEvent<string>();
+const $query = restore<string>(setQuery, '');
+const $queryDeb = debounce({ source: $query, timeout: 200 });
 
 const $leads = createStore<Array<Lead>>([]);
 const $error = createStore<string>('');
 const load = createGate();
 
+//  todo: remove
 // @ts-ignore
 sample({
   source: load.status,
@@ -42,6 +53,18 @@ sample({
   clock: getAllLeadsFx.failData,
   fn: JSON.stringify,
   target: $error,
+});
+
+sample({
+  source: $queryDeb,
+  filter: (val) => val.length >= 3,
+  target: getFilteredLeads,
+});
+
+sample({
+  source: $queryDeb,
+  filter: (val) => val.length === 0,
+  target: getAllLeads,
 });
 
 sample({
@@ -68,5 +91,6 @@ export const model = {
   $inProgress,
   $leads,
   $error,
-  getFilteredLeads,
+  setQuery,
+  $query,
 };

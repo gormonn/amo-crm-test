@@ -1,22 +1,7 @@
-import { Alert, Button, Table } from 'antd';
+import { Alert, Table, Input } from 'antd';
 import { useGate, useUnit } from 'effector-react';
-import { leadsModel } from '../../../entities/leads';
+import { leadsModel } from 'entities/leads';
 import css from './leads.module.scss';
-
-const dataSource = [
-  {
-    key: '1',
-    name: 'Mike',
-    age: 32,
-    address: '10 Downing Street',
-  },
-  {
-    key: '2',
-    name: 'John',
-    age: 42,
-    address: '10 Downing Street',
-  },
-];
 
 const columns = [
   {
@@ -38,18 +23,23 @@ const columns = [
 
 export const Leads = () => {
   useGate(leadsModel.load);
-  const [dataSource, error, inProgress, getFilteredLeads] = useUnit([
+  const [dataSource, error, inProgress, setQuery, query] = useUnit([
     leadsModel.$leads,
     leadsModel.$error,
     leadsModel.$inProgress,
-    leadsModel.getFilteredLeads,
+    leadsModel.setQuery,
+    leadsModel.$query,
   ]);
 
   return (
     <div className={css.leads}>
       {error && <Alert message={error} type="warning" closable></Alert>}
+      <Input
+        placeholder="input search text"
+        value={query}
+        onChange={(e) => setQuery(e.target.value)}
+      />
       <Table dataSource={dataSource} columns={columns} loading={inProgress} />
-      <Button onClick={getFilteredLeads}>Use filter</Button>
     </div>
   );
 };
