@@ -12,4 +12,17 @@ export class AppController {
   ) {
     return this.amoClientService.getLeads({ query });
   }
+
+  // не нашел быстрого способа пеерезаписать env
+  // dotenv.config({ override: true }); не помогло
+  // @Get('re-auth')
+  // async reAuth() {
+  //   try {
+  //     await this.amoClientService.reAuth();
+  //     return 'done';
+  //   } catch (e) {
+  //     console.error(e);
+  //     return 'fail';
+  //   }
+  // }
 }

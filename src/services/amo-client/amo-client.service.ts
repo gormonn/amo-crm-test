@@ -40,6 +40,32 @@ export class AmoClientService {
     return data;
   }
 
+  async reAuth() {
+    try {
+      const { data } = await firstValueFrom(
+        this.httpService
+          .post<Credentials>('oauth2/access_token', {
+            client_id: process.env.APP_CLIENT_ID,
+            client_secret: process.env.APP_CLIENT_SECRET,
+            grant_type: 'authorization_code',
+            code: process.env.APP_CLIENT_AUTH_CODE,
+            redirect_uri: process.env.APP_REDIRECT_URI,
+          })
+          .pipe(
+            catchError((error: AxiosError) => {
+              console.error(
+                `Auth Error: ${JSON.stringify(error.response.data)}`,
+              );
+              throw 'APP_CLIENT_AUTH_CODE will update!';
+            }),
+          ),
+      );
+      this.creds = data;
+    } catch (e) {
+      console.error(e);
+    }
+  }
+
   async onModuleInit(): Promise<void> {
     applyAuthTokenInterceptor(this.httpService.axiosRef, {
       requestRefresh: async (
@@ -75,22 +101,6 @@ export class AmoClientService {
 
   // минус - при HOT-reload происходит реинициализация
   async onApplicationBootstrap() {
-    const { data } = await firstValueFrom(
-      this.httpService
-        .post<Credentials>('oauth2/access_token', {
-          client_id: process.env.APP_CLIENT_ID,
-          client_secret: process.env.APP_CLIENT_SECRET,
-          grant_type: 'authorization_code',
-          code: process.env.APP_CLIENT_AUTH_CODE,
-          redirect_uri: process.env.APP_REDIRECT_URI,
-        })
-        .pipe(
-          catchError((error: AxiosError) => {
-            console.error(`Auth Error: ${JSON.stringify(error.response.data)}`);
-            throw 'APP_CLIENT_AUTH_CODE will update!';
-          }),
-        ),
-    );
-    this.creds = data;
+    await this.reAuth();
   }
 }
