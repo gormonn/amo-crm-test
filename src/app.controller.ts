@@ -1,30 +1,15 @@
-import { Controller, Get, Query } from '@nestjs/common';
-import { AppService } from './app.service';
+import { Controller, Get, Query, ValidationPipe } from '@nestjs/common';
 import { AmoClientService } from './services/amo-client/amo-client.service';
-import * as process from 'process';
+import { LeadQueryParamDto } from './validators';
 
 @Controller()
 export class AppController {
-  constructor(
-    private readonly appService: AppService,
-    private readonly amoClientService: AmoClientService,
-  ) {}
-
-  //  todo: remove
-  @Get()
-  getHello(): string {
-    return this.appService.getHello();
-  }
-
-  //  todo: remove
-  @Get('auth')
-  getTest() {
-    return this.amoClientService.auth();
-  }
+  constructor(private readonly amoClientService: AmoClientService) {}
 
   @Get('leads')
-  getLeads() {
-    //    return 'leads';
-    return this.amoClientService.getLeads();
+  getFilteredLeads(
+    @Query('query', new ValidationPipe()) query?: LeadQueryParamDto,
+  ) {
+    return this.amoClientService.getLeads({ query });
   }
 }
