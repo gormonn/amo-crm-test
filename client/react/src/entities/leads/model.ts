@@ -30,11 +30,8 @@ const $leads = createStore<Array<Lead>>([]);
 const $error = createStore<string>('');
 const load = createGate();
 
-//  todo: remove
-// @ts-ignore
 sample({
-  source: load.status,
-  filter: Boolean,
+  clock: load.open,
   target: getAllLeads,
 });
 
