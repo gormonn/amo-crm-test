@@ -45,6 +45,7 @@ export class AmoClientService {
       const { data } = await firstValueFrom(
         this.httpService
           .post<Credentials>('oauth2/access_token', {
+            // занятный факт, в документации сказано, что чтение из process.env может быть медленным, поэтому мы можем кешировать значения
             client_id: process.env.APP_CLIENT_ID,
             client_secret: process.env.APP_CLIENT_SECRET,
             grant_type: 'authorization_code',
