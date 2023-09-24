@@ -2,7 +2,11 @@ import { Injectable } from '@nestjs/common';
 import { HttpService } from '@nestjs/axios';
 import * as process from 'process';
 import axios, { AxiosError } from 'axios';
-import { IAuthTokens, applyAuthTokenInterceptor } from 'axios-jwt';
+import {
+  IAuthTokens,
+  applyAuthTokenInterceptor,
+  setAuthTokens,
+} from 'axios-jwt';
 import { getBaseUrl } from 'src/lib';
 import { catchError, firstValueFrom } from 'rxjs';
 import { LeadQueryParamDto } from '../../validators';
@@ -19,7 +23,7 @@ export class AmoClientService {
   private creds: Credentials = {};
   constructor(private readonly httpService: HttpService) {}
 
-  async getLeads(params?: { query: LeadQueryParamDto }) {
+  async getLeadsOld(params?: { query: LeadQueryParamDto }) {
     const { data } = await firstValueFrom(
       this.httpService
         .get('/api/v4/leads', {
@@ -37,6 +41,19 @@ export class AmoClientService {
           }),
         ),
     );
+    return data;
+  }
+  async getLeads(params?: { query: LeadQueryParamDto }) {
+    const { data } = await this.httpService.axiosRef
+      .get('/api/v4/leads', {
+        params,
+      })
+      .then((res) => res)
+      .catch((error) => {
+        console.error(`api/v4/leads: ${JSON.stringify(error.response.data)}`);
+        throw 'Error!';
+      });
+
     return data;
   }
 
@@ -61,7 +78,12 @@ export class AmoClientService {
             }),
           ),
       );
-      this.creds = data;
+
+      await setAuthTokens({
+        accessToken: data.access_token,
+        refreshToken: data.refresh_token,
+      });
+      // this.creds = data;
     } catch (e) {
       console.error(e);
     }
@@ -91,12 +113,13 @@ export class AmoClientService {
         },
         set: async (key: string, value: string) => {
           this.creds[key] = value;
-          console.log('SETTER creds', this.creds);
         },
         get: async (key: string) => {
           return this.creds?.[key] || null;
         },
       }),
+      header: 'Authorization',
+      headerPrefix: 'Bearer ',
     });
   }
 
